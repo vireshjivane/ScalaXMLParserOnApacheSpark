@@ -185,7 +185,7 @@ class ScalaApplicationS3 {
 
   }
 
-  def getFileFromS3WithRI(bucketName: String, objectKey: String) : RDD[String] = {
+  def loadObjectFromS3ToSparkRDD(bucketName: String, objectKey: String) : RDD[String] = {
 
    // val uri = "s3n://"+ accessKey + ":" + secretKey +"@" + bucketName + "/" + objectKey
 
