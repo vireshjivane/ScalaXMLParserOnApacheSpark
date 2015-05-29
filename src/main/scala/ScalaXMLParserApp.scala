@@ -1,5 +1,6 @@
 /**
  * Created by Viresh on 5/26/2015.
+ * Scala XML Parser running on Apache Spark Engine
  */
 
 import java.io.{FileWriter, BufferedWriter, StringReader}
@@ -14,45 +15,41 @@ object ScalaXMLParserApp extends App {
   val objectKey = "inputXML"
 
   val S3Client = new ScalaApplicationS3()
-
   S3Client.initializeS3Client()
 
   SparkConfiguration.initializeSpark("ScalaXMLParserOnApacheSpark", "local")
   val context = SparkConfiguration.getConfiguredSpark
 
-  val inputRDD = S3Client.getFileFromS3WithRI(bucketName, objectKey)
+  val inputRDD = S3Client.loadObjectFromS3ToSparkRDD(bucketName, objectKey)
 
   parserOnSpark(inputRDD)
 
   println("Exiting App !")
 
-  def parserOnSpark(inputRDD: RDD[String]): Unit = {
+  def parserOnSpark(inputRDD: RDD[String]): Boolean = {
 
-    println("Entering parser !")
+    println("Entering parser...")
 
     val line = inputRDD.collect().mkString("")
-    val file = Utils.createFileToLoadInRDD(line)
-    val outputRDD = context.textFile(file.getAbsolutePath.toString)
+    val outputRDD = context.parallelize(List(line))
 
-    outputRDD.foreach(theFunction)
+    outputRDD.foreach(parser)
 
-    Utils.deleteFile(file)
-
-    println("Exiting parser !")
+    println("Exiting parser...")
+    true
   }
 
-  def theFunction(line: String): Unit = {
+  def parser(line: String): Boolean = {
 
     val parserObject = new ScalaXMLParser
     val document = parserObject.getDocumentFromString(line)
     val elements = parserObject.parseDocument(document)
 
-    parserObject.documentWriter("Output.txt", elements)
-
     val objectKey = "ParserOutput"+UUID.randomUUID()
-
+    parserObject.documentWriter(objectKey+".txt", elements)
     parserObject.S3ObjectWriter(S3Client, "scalaxmlparsere1257ad9-1cef-4039-8292-6f17724dbde8", objectKey, elements)
 
     println("Object written => " + objectKey)
+    true
   }
 }
