@@ -10,8 +10,8 @@ object SparkConfiguration {
   var conf: SparkConf = null
   var context: SparkContext = null
 
-  val accessKey = "AKIAIUHZOH2BHM5TBHDQ"
-  val secretKey = "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"
+  val accessKey = "AKIAIUGFSBUFNIFCSHB"
+  val secretKey = "uLStiCTmFxEajLJEuT16GRVJ+GDTXH0FS+THJ8H"
 
   def initializeSpark(appName: String, master: String) {
 
